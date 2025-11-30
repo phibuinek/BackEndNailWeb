@@ -3,17 +3,32 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { PaymentModule } from './payments/payment.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    MongooseModule.forRoot('mongodb+srv://phibuinek_db_user:PHI26052003vip@nailcluster.w9jn1tr.mongodb.net/?appName=NailCluster'),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+        if (!uri) {
+            console.warn('Warning: MONGODB_URI not found in .env, using fallback.');
+            return { uri: 'mongodb+srv://phibuinek_db_user:PHI26052003vip@nailcluster.w9jn1tr.mongodb.net/?appName=NailCluster' };
+        }
+        return { uri };
+      },
+      inject: [ConfigService],
+    }),
     AuthModule,
     UsersModule,
-    ProductsModule
+    ProductsModule,
+    PaymentModule
   ],
   controllers: [AppController],
   providers: [AppService],

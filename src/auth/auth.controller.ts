@@ -6,13 +6,6 @@ import { LoginDto } from './dto/login.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // Note: We use a custom method instead of @UseGuards(LocalAuthGuard) directly 
-  // on the route to simplify body parsing for the time being, 
-  // but standard practice is to use the Guard.
-  // However, since LocalStrategy expects 'username' and 'password' in body 
-  // and we want to return a JWT, let's do it manually via service for simplicity 
-  // or stick to standard patterns. Let's stick to standard.
-  
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.validateUser(loginDto.username, loginDto.pass);
@@ -21,5 +14,12 @@ export class AuthController {
     }
     return this.authService.login(user);
   }
-}
 
+  @Post('register')
+  async register(@Body() registerDto: LoginDto) {
+    return this.authService.register({ 
+        username: registerDto.username, 
+        password: registerDto.pass 
+    });
+  }
+}

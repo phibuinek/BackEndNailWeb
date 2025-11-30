@@ -19,7 +19,7 @@ import { PaymentModule } from './payments/payment.module';
         const uri = configService.get<string>('MONGODB_URI');
         if (!uri) {
             console.warn('Warning: MONGODB_URI not found in .env, using fallback.');
-            return { uri: 'mongodb+srv://phibuinek_db_user:PHI26052003vip@nailcluster.w9jn1tr.mongodb.net/?appName=NailCluster' };
+            console.log('MONGODB_URI=', process.env.MONGODB_URI);
         }
         return { uri };
       },

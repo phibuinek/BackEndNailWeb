@@ -108,6 +108,7 @@ export class ProductsService implements OnModuleInit {
                 quantity: random(10, 100),
                 rating: randomFloat(3.5, 5.0),
                 image: categoryImages[cat.en] || '/placeholder.jpg',
+                sold: 0,
                 category: {
                     en: cat.en,
                     vi: cat.vi
@@ -142,5 +143,12 @@ export class ProductsService implements OnModuleInit {
 
   async remove(id: number): Promise<any> {
     return this.productModel.findOneAndDelete({ id }).exec();
+  }
+
+  async updateSold(id: number, quantity: number): Promise<void> {
+    await this.productModel.findOneAndUpdate(
+        { id },
+        { $inc: { sold: quantity, quantity: -quantity } }
+    ).exec();
   }
 }

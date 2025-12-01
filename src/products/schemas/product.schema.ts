@@ -38,10 +38,14 @@ export class Product {
   @Prop({ type: LocalizedString, index: true })
   category: LocalizedString;
 
+  @Prop({ default: 0 })
+  sold: number;
+
   @Prop({ default: Date.now, index: true })
   createdAt?: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+ProductSchema.index({ sold: -1 });
 ProductSchema.index({ price: 1 });
 ProductSchema.index({ 'name.en': 'text', 'name.vi': 'text' });

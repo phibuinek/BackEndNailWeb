@@ -12,5 +12,6 @@ export class Product {
   rating: number;
   image: string;
   category: LocalizedString;
-  createdAt?: Date; // Added optional createdAt
+  sold: number;
+  createdAt?: Date;
 }

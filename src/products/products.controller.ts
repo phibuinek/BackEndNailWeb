@@ -39,6 +39,14 @@ export class ProductsController {
     return this.productsService.remove(+id);
   }
 
+  @Post('update-sold')
+  async updateSold(@Body() body: { items: { id: number, quantity: number }[] }) {
+      for (const item of body.items) {
+          await this.productsService.updateSold(item.id, item.quantity);
+      }
+      return { success: true };
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {

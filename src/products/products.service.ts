@@ -10,7 +10,8 @@ export class ProductsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // await this.seedProducts();
+    // Seeding disabled as per user request - data already exists in DB
+    // await this.seedProducts(); 
   }
 
   private async seedProducts() {

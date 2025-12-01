@@ -17,7 +17,7 @@ export class AuthService {
       return { 
           _id: user._id,
           username: user.username,
-          role: user.role
+          role: user.role || 'customer' // Ensure role fallback
       };
     }
     return null;
@@ -30,10 +30,10 @@ export class AuthService {
         throw new Error('Invalid user data');
     }
     
-    const payload = { username: user.username, sub: user._id, role: user.role };
+    const payload = { username: user.username, sub: user._id, role: user.role || 'customer' };
     return {
       access_token: this.jwtService.sign(payload),
-      role: user.role,
+      role: user.role || 'customer',
       username: user.username
     };
   }

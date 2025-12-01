@@ -9,7 +9,7 @@ export class UsersService implements OnModuleInit {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async onModuleInit() {
-    await this.seedAdminUser();
+    // await this.seedAdminUser();
   }
 
   private async seedAdminUser() {

@@ -10,7 +10,7 @@ export class ProductsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.seedProducts();
+    // await this.seedProducts();
   }
 
   private async seedProducts() {

@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PaymentModule } from './payments/payment.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { PaymentModule } from './payments/payment.module';
     AuthModule,
     UsersModule,
     ProductsModule,
-    PaymentModule
+    PaymentModule,
+    OrdersModule
   ],
   controllers: [AppController],
   providers: [AppService],

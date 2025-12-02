@@ -25,7 +25,14 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() product: Product): Promise<Product> {
-    return this.productsService.create(product);
+    // Ensure images is an array to match Schema requirements
+    const productData = {
+        ...product,
+        images: product.images || []
+    };
+    // We cast to any here because the Entity and Schema types are slightly different in strict mode
+    // Ideally we should use a DTO but for quick fix:
+    return this.productsService.create(productData as any);
   }
 
   @UseGuards(JwtAuthGuard)

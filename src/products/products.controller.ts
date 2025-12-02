@@ -4,7 +4,7 @@ import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { diskStorage } from 'multer';
-import { extname, resolve } from 'path';
+import { extname, resolve, join, sep } from 'path';
 import * as fs from 'fs';
 
 @Controller('products')
@@ -52,25 +52,22 @@ export class ProductsController {
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
       destination: (req, file, cb) => {
-        // Resolving path to be more robust - assuming this runs from /dist/products/
-        // We want to go to /frontend/public/images/uploads
-        // Current working directory (process.cwd()) should be backend root
+        // Robust path resolution
         let rootPath = process.cwd();
-        // If we are inside dist or src, move up
-        if (rootPath.endsWith('dist') || rootPath.endsWith('src')) {
-            rootPath = resolve(rootPath, '..');
-        }
-        // Check if we are in backend directory
-        if (rootPath.endsWith('backend')) {
-            rootPath = resolve(rootPath, '..');
-        }
-
-        const uploadPath = resolve(rootPath, 'frontend/public/images/uploads');
         
-        console.log('Uploading file to:', uploadPath);
+        // If running from backend directory, move up to workspace root
+        if (rootPath.endsWith('backend') || rootPath.endsWith('backend' + sep)) {
+            rootPath = resolve(rootPath, '..');
+        }
+        
+        // Construct absolute path to frontend public uploads
+        const uploadPath = join(rootPath, 'frontend', 'public', 'images', 'uploads');
+        
+        console.log('MULTER: Upload path determined as:', uploadPath);
         
         // Ensure directory exists
         if (!fs.existsSync(uploadPath)) {
+          console.log('MULTER: Creating directory:', uploadPath);
           fs.mkdirSync(uploadPath, { recursive: true });
         }
         
@@ -78,7 +75,10 @@ export class ProductsController {
       },
       filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        const ext = extname(file.originalname);
+        const filename = `${uniqueSuffix}${ext}`;
+        console.log('MULTER: Saving file as:', filename);
+        cb(null, filename);
       },
     }),
   }))

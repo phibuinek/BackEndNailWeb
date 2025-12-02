@@ -7,7 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PaymentModule } from './payments/payment.module';
-// import { OrdersModule } from './orders/orders.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { PaymentModule } from './payments/payment.module';
     UsersModule,
     ProductsModule,
     PaymentModule,
-    // OrdersModule
+    OrdersModule
   ],
   controllers: [AppController],
   providers: [AppService],

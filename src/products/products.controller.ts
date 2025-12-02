@@ -55,7 +55,19 @@ export class ProductsController {
         // Resolving path to be more robust - assuming this runs from /dist/products/
         // We want to go to /frontend/public/images/uploads
         // Current working directory (process.cwd()) should be backend root
-        const uploadPath = resolve(process.cwd(), '../frontend/public/images/uploads');
+        let rootPath = process.cwd();
+        // If we are inside dist or src, move up
+        if (rootPath.endsWith('dist') || rootPath.endsWith('src')) {
+            rootPath = resolve(rootPath, '..');
+        }
+        // Check if we are in backend directory
+        if (rootPath.endsWith('backend')) {
+            rootPath = resolve(rootPath, '..');
+        }
+
+        const uploadPath = resolve(rootPath, 'frontend/public/images/uploads');
+        
+        console.log('Uploading file to:', uploadPath);
         
         // Ensure directory exists
         if (!fs.existsSync(uploadPath)) {

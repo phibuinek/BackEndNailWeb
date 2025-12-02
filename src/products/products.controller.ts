@@ -3,13 +3,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { diskStorage } from 'multer';
-import { extname, resolve, join, sep } from 'path';
-import * as fs from 'fs';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly cloudinaryService: CloudinaryService
+  ) {}
 
   @Get()
   async findAll(): Promise<Product[]> {
@@ -49,41 +50,14 @@ export class ProductsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: (req, file, cb) => {
-        // Robust path resolution
-        let rootPath = process.cwd();
-        
-        // If running from backend directory, move up to workspace root
-        if (rootPath.endsWith('backend') || rootPath.endsWith('backend' + sep)) {
-            rootPath = resolve(rootPath, '..');
-        }
-        
-        // Construct absolute path to frontend public uploads
-        const uploadPath = join(rootPath, 'frontend', 'public', 'images', 'uploads');
-        
-        console.log('MULTER: Upload path determined as:', uploadPath);
-        
-        // Ensure directory exists
-        if (!fs.existsSync(uploadPath)) {
-          console.log('MULTER: Creating directory:', uploadPath);
-          fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        
-        cb(null, uploadPath);
-      },
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = extname(file.originalname);
-        const filename = `${uniqueSuffix}${ext}`;
-        console.log('MULTER: Saving file as:', filename);
-        cb(null, filename);
-      },
-    }),
-  }))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    // Return path relative to public folder for Next.js Image
-    return { url: `/images/uploads/${file.filename}` };
+  @UseInterceptors(FileInterceptor('file')) // Default is memory storage
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    try {
+      const result = await this.cloudinaryService.uploadImage(file);
+      return { url: result.secure_url };
+    } catch (error) {
+      console.error('Upload failed:', error);
+      throw error;
+    }
   }
 }

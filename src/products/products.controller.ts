@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -50,11 +50,18 @@ export class ProductsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file')) // Default is memory storage
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  @UseInterceptors(FilesInterceptor('files', 10)) // Max 10 files
+  async uploadFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
     try {
-      const result = await this.cloudinaryService.uploadImage(file);
-      return { url: result.secure_url };
+      if (!files || files.length === 0) {
+         throw new Error('No files uploaded');
+      }
+      
+      const uploadPromises = files.map(file => this.cloudinaryService.uploadImage(file));
+      const results = await Promise.all(uploadPromises);
+      
+      // Return array of URLs
+      return { urls: results.map(res => res.secure_url) };
     } catch (error) {
       console.error('Upload failed:', error);
       throw error;

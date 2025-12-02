@@ -35,6 +35,9 @@ export class Product {
   @Prop()
   image: string;
 
+  @Prop([String])
+  images: string[];
+
   @Prop({ type: LocalizedString, index: true })
   category: LocalizedString;
 

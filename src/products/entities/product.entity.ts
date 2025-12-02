@@ -11,6 +11,7 @@ export class Product {
   quantity: number;
   rating: number;
   image: string;
+  images?: string[];
   category: LocalizedString;
   sold: number;
   createdAt?: Date;

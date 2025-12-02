@@ -134,11 +134,24 @@ export class ProductsService implements OnModuleInit {
     // Auto-increment ID logic (simplified)
     const lastProduct = await this.productModel.findOne().sort({ id: -1 }).exec();
     const nextId = lastProduct ? lastProduct.id + 1 : 1;
+
+    // Ensure image is set from images[0] if available
+    if (product.images && product.images.length > 0 && !product.image) {
+        product.image = product.images[0];
+    }
+
     const newProduct = new this.productModel({ ...product, id: nextId });
     return newProduct.save();
   }
 
   async update(id: number, updateData: Partial<Product>): Promise<Product | null> {
+    // Ensure image is set from images[0] if available and image is not explicitly updated
+    if (updateData.images && updateData.images.length > 0) {
+         // Logic: If user updates images, default main image to first one unless specified
+         if (!updateData.image) {
+             updateData.image = updateData.images[0];
+         }
+    }
     return this.productModel.findOneAndUpdate({ id }, updateData, { new: true }).exec();
   }
 

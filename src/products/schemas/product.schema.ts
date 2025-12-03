@@ -44,6 +44,9 @@ export class Product {
   @Prop({ default: 0 })
   sold: number;
 
+  @Prop({ default: 0 })
+  discountPercentage: number; // 0 to 100
+
   @Prop({ default: Date.now, index: true })
   createdAt?: Date;
 }

@@ -39,4 +39,15 @@ export class UsersService implements OnModuleInit {
     });
     return createdUser.save();
   }
+
+  async findById(userId: string): Promise<UserDocument | null> {
+    return this.userModel.findById(userId).exec();
+  }
+
+  async updateRefreshToken(userId: string, refreshToken: string | null) {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { refreshToken }
+    ).exec();
+  }
 }

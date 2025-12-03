@@ -1,4 +1,4 @@
 export const jwtConstants = {
-  secret: 'PHI26052003vip_SECRET_KEY', // In production, use env var
+  secret: process.env.JWT_SECRET || 'fallback_secret_key_DO_NOT_USE_IN_PROD', // In production, use env var
 };
 

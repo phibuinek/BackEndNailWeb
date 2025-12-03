@@ -14,6 +14,6 @@ export class Product {
   images?: string[];
   category: LocalizedString;
   sold: number;
-  discountPercentage?: number;
+  discount?: number;
   createdAt?: Date;
 }

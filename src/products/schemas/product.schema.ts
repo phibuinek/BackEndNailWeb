@@ -12,7 +12,7 @@ export class LocalizedString {
   vi: string;
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Product {
   @Prop({ unique: true })
   id: number;
@@ -47,8 +47,8 @@ export class Product {
   @Prop({ default: 0 })
   discount: number; // 0 to 100
 
-  @Prop({ default: Date.now, index: true })
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

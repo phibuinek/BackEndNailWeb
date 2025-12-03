@@ -32,9 +32,10 @@ export class AuthService {
         throw new Error('Invalid user data');
     }
     
-    const payload = { username: user.username, sub: user._id, role: user.role || 'customer' };
+    const userId = user._id?.toString ? user._id.toString() : user._id;
+    const payload = { username: user.username, sub: userId, role: user.role || 'customer' };
     const tokens = await this.getTokens(payload);
-    await this.updateRefreshToken(user._id, tokens.refresh_token);
+    await this.updateRefreshToken(userId, tokens.refresh_token);
 
     return {
       ...tokens,
@@ -81,8 +82,9 @@ export class AuthService {
       const refreshMatches = await bcrypt.compare(refreshToken, user.refreshToken);
       if (!refreshMatches) throw new ForbiddenException('Access denied');
 
-      const tokens = await this.getTokens({ username: user.username, sub: user._id, role: user.role });
-      await this.updateRefreshToken(user._id, tokens.refresh_token);
+      const userId = user._id?.toString ? user._id.toString() : (user._id as any);
+      const tokens = await this.getTokens({ username: user.username, sub: userId, role: user.role });
+      await this.updateRefreshToken(userId, tokens.refresh_token);
 
       return {
         ...tokens,

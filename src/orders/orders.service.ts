@@ -17,5 +17,9 @@ export class OrdersService {
   async findAll(): Promise<Order[]> {
     return this.orderModel.find().sort({ createdAt: -1 }).exec();
   }
+
+  async findByUsername(username: string): Promise<Order[]> {
+    return this.orderModel.find({ username }).sort({ createdAt: -1 }).exec();
+  }
 }
 

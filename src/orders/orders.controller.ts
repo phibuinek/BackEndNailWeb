@@ -1,5 +1,5 @@
 
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -17,6 +17,11 @@ export class OrdersController {
   @Get()
   async findAll() {
     return this.ordersService.findAll();
+  }
+
+  @Get('user/:username')
+  async findByUser(@Param('username') username: string) {
+    return this.ordersService.findByUsername(username);
   }
 }
 

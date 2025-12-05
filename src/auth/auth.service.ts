@@ -72,15 +72,26 @@ export class AuthService {
     }
 
     try {
+      const jwtSecret = this.configService.get<string>('JWT_SECRET')!;
+      const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret;
+      
       const payload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET') || this.configService.get<string>('JWT_SECRET')!,
+        secret: refreshSecret,
       });
 
       const user = await this.usersService.findById(payload.sub);
-      if (!user || !user.refreshToken) throw new ForbiddenException('Access denied');
+      if (!user) {
+        throw new ForbiddenException('User not found');
+      }
+      
+      if (!user.refreshToken) {
+        throw new ForbiddenException('No refresh token stored for user');
+      }
 
       const refreshMatches = await bcrypt.compare(refreshToken, user.refreshToken);
-      if (!refreshMatches) throw new ForbiddenException('Access denied');
+      if (!refreshMatches) {
+        throw new ForbiddenException('Refresh token mismatch');
+      }
 
       const userId = user._id?.toString ? user._id.toString() : (user._id as any);
       const tokens = await this.getTokens({ username: user.username, sub: userId, role: user.role });
@@ -92,7 +103,12 @@ export class AuthService {
         username: user.username,
       };
     } catch (error) {
-      throw new ForbiddenException('Invalid refresh token');
+      // Log error for debugging but don't expose details to client
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      // JWT verification errors (expired, invalid, etc.)
+      throw new ForbiddenException('Invalid or expired refresh token');
     }
   }
 

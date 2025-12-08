@@ -8,16 +8,25 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor(private configService: ConfigService) {
+    // Use explicit SMTP configuration for better compatibility with Render.com
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: {
         user: this.configService.get<string>('EMAIL_USER') || 'phibuinek@gmail.com',
         pass: this.configService.get<string>('EMAIL_PASSWORD'), // App password from Gmail
       },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+      tls: {
+        rejectUnauthorized: false, // For Render.com compatibility
+      },
     });
   }
 
-  async sendInvoiceEmail(order: Order): Promise<void> {
+  async sendInvoiceEmail(order: Order): Promise<any> {
     const orderDate = new Date(order.createdAt).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -186,11 +195,26 @@ export class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      // Verify connection first
+      await this.transporter.verify();
+      
+      // Send email with timeout
+      const result = await Promise.race([
+        this.transporter.sendMail(mailOptions),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Email send timeout')), 15000)
+        )
+      ]);
+      
       console.log(`Invoice email sent successfully to ${order.email}`);
+      return result;
     } catch (error) {
       console.error('Error sending invoice email:', error);
-      throw error;
+      // Don't throw error to prevent blocking order creation
+      // Just log it - email can be sent later via admin panel if needed
+      console.warn(`Failed to send invoice email to ${order.email}. Order was still created successfully.`);
+      // Optionally, you could queue this for retry later
+      return null;
     }
   }
 }

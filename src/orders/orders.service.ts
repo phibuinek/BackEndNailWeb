@@ -27,7 +27,13 @@ export class OrdersService {
     if (!order) {
       throw new Error('Order not found');
     }
-    await this.emailService.sendInvoiceEmail(order);
+    try {
+      await this.emailService.sendInvoiceEmail(order);
+    } catch (error) {
+      // Log error but don't throw - order creation should succeed even if email fails
+      console.error(`Failed to send invoice email for order ${orderId}:`, error);
+      // Return success anyway - email can be resent later
+    }
   }
 
   async findAll(): Promise<Order[]> {

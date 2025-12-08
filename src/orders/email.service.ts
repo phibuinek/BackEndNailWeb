@@ -1,29 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { Order } from './schemas/order.schema';
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
 
   constructor(private configService: ConfigService) {
-    // Use explicit SMTP configuration for better compatibility with Render.com
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: this.configService.get<string>('EMAIL_USER') || 'phibuinek@gmail.com',
-        pass: this.configService.get<string>('EMAIL_PASSWORD'), // App password from Gmail
-      },
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
-      tls: {
-        rejectUnauthorized: false, // For Render.com compatibility
-      },
-    });
+    // Use Resend API instead of SMTP for better compatibility with Render.com
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    if (!apiKey) {
+      console.warn('RESEND_API_KEY not found. Email sending will be disabled.');
+    }
+    this.resend = new Resend(apiKey);
   }
 
   async sendInvoiceEmail(order: Order): Promise<any> {
@@ -184,36 +174,31 @@ export class EmailService {
 </html>
     `;
 
-    const mailOptions = {
-      from: {
-        name: "Pham's nail supplies",
-        address: 'phibuinek@gmail.com',
-      },
-      to: order.email,
-      subject: `Order Confirmation - #${orderIdShort}`,
-      html: htmlContent,
-    };
-
     try {
-      // Verify connection first
-      await this.transporter.verify();
+      const apiKey = this.configService.get<string>('RESEND_API_KEY');
+      if (!apiKey) {
+        console.warn('RESEND_API_KEY not configured. Skipping email send.');
+        return null;
+      }
+
+      // Send email using Resend API
+      const result = await this.resend.emails.send({
+        from: "Pham's nail supplies <onboarding@resend.dev>", // Use Resend default domain or your verified domain
+        to: order.email,
+        subject: `Order Confirmation - #${orderIdShort}`,
+        html: htmlContent,
+      });
       
-      // Send email with timeout
-      const result = await Promise.race([
-        this.transporter.sendMail(mailOptions),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Email send timeout')), 15000)
-        )
-      ]);
+      if (result.error) {
+        throw new Error(result.error.message || 'Failed to send email');
+      }
       
-      console.log(`Invoice email sent successfully to ${order.email}`);
-      return result;
+      console.log(`Invoice email sent successfully to ${order.email}. Email ID: ${result.data?.id || 'N/A'}`);
+      return result.data;
     } catch (error) {
       console.error('Error sending invoice email:', error);
       // Don't throw error to prevent blocking order creation
-      // Just log it - email can be sent later via admin panel if needed
       console.warn(`Failed to send invoice email to ${order.email}. Order was still created successfully.`);
-      // Optionally, you could queue this for retry later
       return null;
     }
   }

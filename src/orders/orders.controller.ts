@@ -23,5 +23,11 @@ export class OrdersController {
   async findByUser(@Param('username') username: string) {
     return this.ordersService.findByUsername(username);
   }
+
+  @Post(':id/send-invoice')
+  async sendInvoice(@Param('id') id: string) {
+    await this.ordersService.sendInvoice(id);
+    return { message: 'Invoice email sent successfully' };
+  }
 }
 

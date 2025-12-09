@@ -21,30 +21,59 @@
 
 Thêm vào file `.env` của backend (hoặc trên Render.com dashboard):
 
+### Tối thiểu (chỉ test với email của bạn):
 ```env
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+### Đầy đủ (sau khi verify domain):
+```env
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_DOMAIN=yourdomain.com
+RESEND_FROM_EMAIL=noreply
 ```
 
 **Lưu ý:** 
 - Giữ bảo mật API key
 - Không commit API key lên Git
 - API key bắt đầu với `re_`
+- `RESEND_DOMAIN`: Domain đã verify trên Resend
+- `RESEND_FROM_EMAIL`: Phần trước @ (ví dụ: noreply, hello, info)
 
-## Bước 4: Verify Domain (Tùy chọn - Khuyến nghị)
+## Bước 4: Verify Domain (BẮT BUỘC để gửi email đến khách hàng)
 
-### Sử dụng Resend default domain (Ngay lập tức):
-- Email sẽ gửi từ `onboarding@resend.dev`
-- Hoạt động ngay, không cần verify
+**⚠️ QUAN TRỌNG:** Resend chỉ cho phép gửi email đến chính email của bạn (phibuinek@gmail.com) khi dùng domain mặc định. Để gửi email đến khách hàng, bạn **PHẢI** verify domain.
 
-### Verify domain của bạn (Chuyên nghiệp hơn):
-1. Vào **Domains** trong Resend dashboard
-2. Click **Add Domain**
-3. Nhập domain của bạn (ví dụ: `nailweb.com`)
-4. Thêm DNS records như hướng dẫn
-5. Sau khi verify, cập nhật `from` trong code:
-   ```typescript
-   from: "Pham's nail supplies <noreply@yourdomain.com>"
+### Cách verify domain:
+
+1. **Vào Resend Dashboard** → **Domains**
+2. **Click "Add Domain"**
+3. **Nhập domain của bạn** (ví dụ: `nailweb.com` hoặc subdomain như `mail.nailweb.com`)
+   - Nếu bạn dùng Vercel, có thể dùng domain của Vercel
+   - Hoặc mua domain riêng (Namecheap, GoDaddy, etc.)
+4. **Thêm DNS Records** như Resend hướng dẫn:
+   - Thường cần thêm 3-4 records (TXT, MX, etc.)
+   - Copy records từ Resend và thêm vào DNS provider của bạn
+5. **Chờ verify** (thường mất 5-15 phút)
+6. **Sau khi verify**, thêm vào `.env`:
+   ```env
+   RESEND_DOMAIN=yourdomain.com
+   RESEND_FROM_EMAIL=noreply
    ```
+   Email sẽ gửi từ: `noreply@yourdomain.com`
+
+### Nếu chưa có domain:
+
+**Option 1: Dùng domain miễn phí**
+- Freenom (.tk, .ml, .ga, .cf)
+- No-IP (subdomain miễn phí)
+
+**Option 2: Mua domain rẻ**
+- Namecheap (~$1-10/năm)
+- GoDaddy (~$1-15/năm)
+
+**Option 3: Dùng subdomain của Vercel**
+- Nếu deploy trên Vercel, có thể dùng subdomain của Vercel
 
 ## Bước 5: Khởi động lại server
 

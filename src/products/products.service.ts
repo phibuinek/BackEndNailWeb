@@ -58,7 +58,8 @@ export class ProductsService implements OnModuleInit {
         { en: 'Waxing', vi: 'Tẩy Lông' },
         { en: 'Pedicure', vi: 'Chăm Sóc Móng Chân' },
         { en: 'Eyelashes', vi: 'Lông Mi' },
-        { en: 'Gloves', vi: 'Găng Tay' }
+        { en: 'Gloves', vi: 'Găng Tay' },
+        { en: 'Other', vi: 'Khác' }
     ];
 
     const sampleProducts = [

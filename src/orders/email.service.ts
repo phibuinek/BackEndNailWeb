@@ -16,6 +16,20 @@ export class EmailService {
     this.resend = new Resend(apiKey);
   }
 
+  private getFromAddress(): string {
+    // Check if custom domain is configured
+    const customDomain = this.configService.get<string>('RESEND_DOMAIN');
+    const customEmail = this.configService.get<string>('RESEND_FROM_EMAIL') || 'noreply';
+    
+    if (customDomain) {
+      return `Pham's nail supplies <${customEmail}@${customDomain}>`;
+    }
+    
+    // Default: Use Resend's test domain (only works for your own email)
+    // This will fail for other recipients - user must verify domain
+    return "Pham's nail supplies <onboarding@resend.dev>";
+  }
+
   async sendInvoiceEmail(order: Order): Promise<any> {
     const orderDate = new Date(order.createdAt).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -182,23 +196,36 @@ export class EmailService {
       }
 
       // Send email using Resend API
+      const fromAddress = this.getFromAddress();
       const result = await this.resend.emails.send({
-        from: "Pham's nail supplies <onboarding@resend.dev>", // Use Resend default domain or your verified domain
+        from: fromAddress,
         to: order.email,
         subject: `Order Confirmation - #${orderIdShort}`,
         html: htmlContent,
       });
       
       if (result.error) {
-        throw new Error(result.error.message || 'Failed to send email');
+        const errorMessage = result.error.message || 'Failed to send email';
+        
+        // Check if it's a domain verification error
+        if (errorMessage.includes('verify a domain') || errorMessage.includes('testing emails')) {
+          console.error('⚠️ DOMAIN VERIFICATION REQUIRED:');
+          console.error('Resend requires domain verification to send emails to other recipients.');
+          console.error('Please verify your domain at: https://resend.com/domains');
+          console.error('Then set RESEND_DOMAIN and RESEND_FROM_EMAIL in your .env file');
+          console.error(`Attempted to send to: ${order.email}`);
+        }
+        
+        throw new Error(errorMessage);
       }
       
-      console.log(`Invoice email sent successfully to ${order.email}. Email ID: ${result.data?.id || 'N/A'}`);
+      console.log(`✅ Invoice email sent successfully to ${order.email}. Email ID: ${result.data?.id || 'N/A'}`);
       return result.data;
-    } catch (error) {
-      console.error('Error sending invoice email:', error);
+    } catch (error: any) {
+      console.error('❌ Error sending invoice email:', error.message || error);
       // Don't throw error to prevent blocking order creation
-      console.warn(`Failed to send invoice email to ${order.email}. Order was still created successfully.`);
+      console.warn(`⚠️ Failed to send invoice email to ${order.email}. Order was still created successfully.`);
+      console.warn('💡 Tip: Verify your domain at https://resend.com/domains to enable email sending');
       return null;
     }
   }

@@ -64,16 +64,20 @@ RESEND_FROM_EMAIL=noreply
 
 ### Nếu chưa có domain:
 
-**Option 1: Dùng domain miễn phí**
-- Freenom (.tk, .ml, .ga, .cf)
-- No-IP (subdomain miễn phí)
+**⚠️ LƯU Ý:** Vercel không cho phép dùng domain miễn phí (`*.vercel.app`) cho email. Bạn cần domain riêng.
 
-**Option 2: Mua domain rẻ**
-- Namecheap (~$1-10/năm)
-- GoDaddy (~$1-15/năm)
+**Option 1: Mua domain rẻ (KHUYẾN NGHỊ)**
+- **Namecheap**: ~$1-10/năm (thường có mã giảm giá)
+  - Truy cập: https://www.namecheap.com
+  - Tìm domain rẻ (ví dụ: `.xyz`, `.online`, `.site`)
+  - Mua và cấu hình DNS
+- **GoDaddy**: ~$1-15/năm
+- **Cloudflare Registrar**: Giá gốc, không markup
 
-**Option 3: Dùng subdomain của Vercel**
-- Nếu deploy trên Vercel, có thể dùng subdomain của Vercel
+**Option 2: Dùng domain miễn phí (KHÔNG KHUYẾN NGHỊ)**
+- **Freenom**: (.tk, .ml, .ga, .cf) - Miễn phí nhưng có thể bị spam filter chặn
+- **No-IP**: Subdomain miễn phí
+- ⚠️ **Cảnh báo**: Domain miễn phí thường bị email providers chặn, email dễ vào spam folder
 
 ## Bước 5: Khởi động lại server
 

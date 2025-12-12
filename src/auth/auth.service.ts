@@ -133,4 +133,23 @@ export class AuthService {
     const hashedToken = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(userId, hashedToken);
   }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new ForbiddenException('User not found');
+    }
+
+    // Verify old password
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new ForbiddenException('Current password is incorrect');
+    }
+
+    // Hash and update new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updatePassword(userId, hashedNewPassword);
+
+    return { message: 'Password changed successfully' };
+  }
 }

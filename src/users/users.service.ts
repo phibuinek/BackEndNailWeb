@@ -50,4 +50,11 @@ export class UsersService implements OnModuleInit {
       { refreshToken }
     ).exec();
   }
+
+  async updatePassword(userId: string, hashedPassword: string) {
+    await this.userModel.updateOne(
+      { _id: userId },
+      { password: hashedPassword }
+    ).exec();
+  }
 }
